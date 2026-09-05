@@ -2,7 +2,7 @@ name: Personal AI cloud scheduler
 
 on:
   schedule:
-    - cron: '2-57/5 * * * *'
+    - cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Wake the encrypted scheduler endpoint
         env:
           SCHEDULER_SECRET: ${{ secrets.SCHEDULER_TRIGGER_SECRET }}
