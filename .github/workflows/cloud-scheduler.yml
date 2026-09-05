@@ -1,0 +1,40 @@
+name: Personal AI cloud scheduler
+
+on:
+  schedule:
+    - cron: '2-57/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: personal-ai-cloud-scheduler
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wake the encrypted scheduler endpoint
+        env:
+          SCHEDULER_SECRET: ${{ secrets.SCHEDULER_TRIGGER_SECRET }}
+        run: |
+          curl --silent --show-error --fail-with-body --retry 2 --retry-all-errors --max-time 45 \
+            -X POST \
+            -H "Authorization: Bearer ${SCHEDULER_SECRET}" \
+            https://beiqing-personal-ai.aufblack.chatgpt.site/api/internal/scheduler
+      - name: Keep the public scheduled workflow active
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +'%d%H%M')" != "010002" ]; then
+            exit 0
+          fi
+          date -u +'%Y-%m-%dT%H:%M:%SZ' > .scheduler-keepalive
+          git config user.name 'Personal AI Scheduler'
+          git config user.email 'actions@users.noreply.github.com'
+          git add .scheduler-keepalive
+          git commit -m 'chore: keep scheduler active'
+          git push
