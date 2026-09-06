@@ -29,7 +29,8 @@ jobs:
       - name: Keep the public scheduled workflow active
         if: github.event_name == 'schedule'
         run: |
-          if [ "$(date -u +'%d%H%M')" != "010002" ]; then
+          current_month="$(date -u +'%Y-%m')"
+          if [ -f .scheduler-keepalive ] && grep -q "^${current_month}" .scheduler-keepalive; then
             exit 0
           fi
           date -u +'%Y-%m-%dT%H:%M:%SZ' > .scheduler-keepalive
